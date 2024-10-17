@@ -1,27 +1,45 @@
-// @/lib/ledger/core/Block.ts
+// file: @/lib/ledger/core/Block.ts
 
 import { Transaction } from './Transaction';
 import { SHA256 } from 'crypto-js';
+import { BLOCKCHAIN_CONSTANTS } from '../Constants';
+
+interface BlockState {
+  index: number;
+  timestamp: number;
+  transactions: Transaction[];
+  previousHash: string;
+  nonce: number;
+  hash: string;
+}
 
 export class Block {
-  public readonly index: number;
-  public readonly timestamp: number;
-  public readonly transactions: Transaction[];
-  public readonly previousHash: string;
-  public nonce: number = 0;
-  public hash: string;
+  private state: BlockState;
 
   constructor(
     index: number,
     transactions: Transaction[],
     previousHash: string
   ) {
-    this.index = index;
-    this.timestamp = Date.now();
-    this.transactions = transactions;
-    this.previousHash = previousHash;
-    this.hash = this.calculateHash();
+    this.state = {
+      index,
+      timestamp: Date.now(),
+      transactions,
+      previousHash,
+      nonce: 0,
+      hash: ''
+    };
+    this.state.hash = this.calculateHash();
   }
+
+  get index(): number { return this.state.index; }
+  get timestamp(): number { return this.state.timestamp; }
+  get transactions(): Transaction[] { return this.state.transactions; }
+  get previousHash(): string { return this.state.previousHash; }
+  get nonce(): number { return this.state.nonce; }
+  set nonce(value: number) { this.state.nonce = value; }
+  get hash(): string { return this.state.hash; }
+  set hash(value: string) { this.state.hash = value; }
 
   public calculateHash(): string {
     return SHA256(
@@ -33,7 +51,7 @@ export class Block {
     ).toString();
   }
 
-  public mineBlock(difficulty: number): void {
+  public mineBlock(difficulty: number = BLOCKCHAIN_CONSTANTS.MINING_DIFFICULTY): void {
     const target = Array(difficulty + 1).join('0');
     while (this.hash.substring(0, difficulty) !== target) {
       this.nonce++;
@@ -54,5 +72,17 @@ export class Block {
       nonce: this.nonce,
       hash: this.hash,
     };
+  }
+
+  public static fromJSON(json: any): Block {
+    const block = new Block(
+      json.index,
+      json.transactions.map((txData: any) => Transaction.fromJSON(txData)),
+      json.previousHash
+    );
+    block.state.timestamp = json.timestamp;
+    block.state.nonce = json.nonce;
+    block.state.hash = json.hash;
+    return block;
   }
 }

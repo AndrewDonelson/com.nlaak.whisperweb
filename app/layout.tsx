@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/app/ConvexClientProvider";
 import { ToastProvider } from "@/components/ui/toast";
+import { LedgerProvider } from "@/components/app/LedgerProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -71,11 +72,13 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
         <ConvexAuthNextjsServerProvider>
           <ConvexClientProvider>
-            <ThemeAwareLayout>
-              <ToastProvider>
-              {children}
-              </ToastProvider>
-            </ThemeAwareLayout>
+            <LedgerProvider>
+              <ThemeAwareLayout>
+                <ToastProvider>
+                  {children}
+                </ToastProvider>
+              </ThemeAwareLayout>
+            </LedgerProvider>
           </ConvexClientProvider>
         </ConvexAuthNextjsServerProvider>
         <Toaster />
